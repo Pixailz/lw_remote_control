@@ -1,0 +1,7 @@
+RemoteOutput:
+    column: "Remote"
+    category: "Output"
+    clientCode: RemoteControl.Client.RemoteOutputClient
+    logicCode: RemoteControl.Server.RemoteOutputServer
+    prefabGenerator: RemoteControl.Client.RemoteOutputPrefab
+    placingRulesGenerator: RemoteControl.Client.RemoteOutputPlacingRules

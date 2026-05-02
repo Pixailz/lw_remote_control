@@ -1,0 +1,6 @@
+MHG.SettingsMenu.Pages.Controls.Headings.RemoteControl : "Mod: Remote Control"
+
+FancyInput.Trigger.RemoteControl.RemoteControlOpenMenu : "Open Remote Control Menu"
+FancyInput.Trigger.RemoteControl.RemoteControlOpenMenu.Description : """
+    test
+    """

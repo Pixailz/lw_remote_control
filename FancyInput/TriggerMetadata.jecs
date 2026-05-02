@@ -1,0 +1,5 @@
+RemoteControl.RemoteControlOpenMenu:
+    Heading: "RemoteControl"
+    DefaultBinding:
+        Options:
+            - F7
