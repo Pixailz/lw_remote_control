@@ -1,27 +1,25 @@
-using EccsGuiBuilder.Client.Wrappers;
-using EccsGuiBuilder.Client.Wrappers.AutoAssign;
-using EccsGuiBuilder.Client.Layouts.Helper;
 using System.Collections.Generic;
+
 using LogicWorld.Interfaces;
+using LogicWorld.Players;
+using LogicWorld.GameStates;
 using LogicUI.MenuTypes;
+using LogicUI.MenuParts;
 using LogicAPI.Data;
+using LogicLocalization;
 
 using UnityEngine;
 using UnityEngine.UI;
 
-
-using LogicUI.MenuParts;
-using LogicLocalization;
-using LICC;
-using RemoteControl.Shared.CustomData;
+using EccsGuiBuilder.Client.Wrappers;
+using EccsGuiBuilder.Client.Wrappers.AutoAssign;
 using EccsGuiBuilder.Client.Layouts.Elements;
-using LogicWorld.Players;
-using LogicWorld.GameStates;
+using EccsGuiBuilder.Client.Layouts.Helper;
 
-using JetBrains.Annotations;
-using EccsGuiBuilder.Client.Wrappers.RootWrappers;
-using EccsLogicWorldAPI.Client.UnityHelper;
-using EccsGuiBuilder.Client.Wrappers.Specialized;
+
+using RemoteControl.Shared.CustomData;
+using ThisOtherThing.UI.Shapes;
+using LogicUI.Palettes;
 
 namespace RemoteControl.Client.Menus
 {
@@ -29,6 +27,31 @@ namespace RemoteControl.Client.Menus
 		ToggleableSingletonMenu<RemoteControlMenu>,
 		IAssignMyFields
 	{
+		[AssignMe]
+		private GameObject scrollContent;
+
+		[AssignMe]
+		private GameObject detailsSection;
+
+		[AssignMe]
+		private LocalizedTextMesh detailsTitle;
+		[AssignMe]
+		private LocalizedTextMesh detailsId;
+		[AssignMe]
+		private LocalizedTextMesh detailsAddress;
+
+		[AssignMe]
+		private HoverButton buttonOnOff;
+		[AssignMe]
+		private HoverButton buttonPulse;
+		[AssignMe]
+		private HoverButton buttonTeleportTo;
+
+		private static RemoteOutputCard currentCard = null;
+		private static RemoteOutputCard lastCard = null;
+
+		private readonly List<RemoteOutputCard> instantiatedRemoteOutputCards = [];
+
 		public static void init()
 		{
 			WS.window("RemoteControlMenu")
@@ -114,41 +137,16 @@ namespace RemoteControl.Client.Menus
 				)
 				.add<RemoteControlMenu>()
 				.build();
-
-			OnMenuShown += Instance.onMenuShown;
-			OnMenuHidden += Instance.onMenuHidden;
 		}
 
-		[AssignMe]
-		private GameObject scrollContent;
-
-		[AssignMe]
-		private GameObject detailsSection;
-
-		[AssignMe]
-		private LocalizedTextMesh detailsTitle;
-		[AssignMe]
-		private LocalizedTextMesh detailsId;
-		[AssignMe]
-		private LocalizedTextMesh detailsAddress;
-
-		[AssignMe]
-		private HoverButton buttonOnOff;
-		[AssignMe]
-		private HoverButton buttonPulse;
-		[AssignMe]
-		private HoverButton buttonTeleportTo;
-
-		private static RemoteOutputCard currentCard = null;
-		private readonly List<RemoteOutputCard> instantiatedRemoteOutputCards = [];
+		public static void initOnce()
+		{
+			OnMenuShown += () => Instance.onMenuShown();
+			OnMenuHidden += () => Instance.onMenuHidden();
+		}
 
 		private void onMenuShown()
 		{
-			// Fix wrong instance being called
-			if (!object.ReferenceEquals(this, Instance))
-			{
-				return;
-			}
 			currentCard = null;
 			detailsSection.SetActive(false);
 			RefreshScrollArea();
@@ -191,7 +189,6 @@ namespace RemoteControl.Client.Menus
 				RemoteOutputCard.pattern,
 				scrollContent.transform
 			).GetComponent<RemoteOutputCard>();
-
 			instantiatedRemoteOutputCards.Add(card);
 
 			card.remoteOutputMeta = new RemoteOutputMeta(
@@ -201,14 +198,25 @@ namespace RemoteControl.Client.Menus
 			card.GetComponent<HoverButton>()
 				.OnClickEnd += () =>
 				{
-					testFocus(card);
+					SetFocus(card);
 				};
 			CardSetStatus(card, comp_client_code.GetOutputState(0), false);
 		}
 
-		private void testFocus(RemoteOutputCard card)
+		private void SetFocus(RemoteOutputCard card)
 		{
+			lastCard = currentCard;
 			currentCard = card;
+
+			card.GetComponent<HoverButton>()
+				.SetPaletteColor(PaletteColor.Accent);
+
+			if (lastCard != currentCard && lastCard != null)
+			{
+				lastCard.GetComponent<HoverButton>()
+					.SetPaletteColor(PaletteColor.Primary);
+			}
+
 			detailsSection.SetActive(true);
 			detailsTitle.SetLocalizationKey(
 				GetRemoteTitle(card.remoteOutputMeta), true
@@ -226,7 +234,6 @@ namespace RemoteControl.Client.Menus
 			return meta.Id == "" ? meta.Address.ToString() : meta.Id;
 		}
 
-
 		public static RemoteOutputClient GetClientCode(ComponentAddress addr)
 		{
 			return (RemoteOutputClient)Instances.MainWorld.Renderer.Entities
@@ -237,7 +244,6 @@ namespace RemoteControl.Client.Menus
 		{
 			return GetClientCode(currentCard.remoteOutputMeta.Address);
 		}
-
 
 		public static void toggleOutput()
 		{

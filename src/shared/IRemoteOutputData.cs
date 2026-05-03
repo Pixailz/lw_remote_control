@@ -5,6 +5,7 @@ namespace RemoteControl.Shared.CustomData
 		bool Status {get; set;}
 		RemoteOutputAction Action {get; set; }
 		string Id {get; set; }
+		int Size {get; set; }
 	}
 
 	public enum RemoteOutputAction
@@ -25,6 +26,7 @@ namespace RemoteControl.Shared.CustomData
 			data.Status = false;
 			data.Action = RemoteOutputAction.Init;
 			data.Id = "";
+			data.Size = 1;
 		}
 	}
 }

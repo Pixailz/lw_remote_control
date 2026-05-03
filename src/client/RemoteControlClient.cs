@@ -1,11 +1,16 @@
-using LogicAPI.Client;
 using System;
-using EccsLogicWorldAPI.Client.Hooks;
-using LogicWorld;
-using RemoteControl.Client.Menus;
+
 using FancyInput;
-using RemoteControl.Client;
+
+using LogicAPI.Client;
+
+using LogicWorld;
 using LogicWorld.GameStates;
+
+using EccsLogicWorldAPI.Client.Hooks;
+
+using RemoteControl.Client.Menus;
+using RemoteControl.Client;
 
 namespace RemoteControl
 {
@@ -33,6 +38,8 @@ namespace RemoteControl
 
 		public void LoadMenus()
 		{
+			RemoteControlMenu.initOnce();
+
 			WorldHook.worldLoading += () => {
 				try
 				{

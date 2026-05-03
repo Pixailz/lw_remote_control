@@ -14,7 +14,6 @@ using LogicUI.MenuParts;
 using LogicUI.Palettes;
 using RemoteControl.Client.Menus;
 using ThisOtherThing.UI.Shapes;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -50,7 +49,7 @@ namespace RemoteControl.Client
 			var rectangle = pattern.GetComponent<Rectangle>();
 			var outlinePalette = pattern.AddComponent<PaletteRectangleOutline>();
 			Fields.getPrivate(outlinePalette.GetType(), "Target").SetValue(outlinePalette, rectangle);
-			outlinePalette.SetPaletteColor(PaletteColor.Tertiary);
+			outlinePalette.SetPaletteColor(PaletteColor.Primary);
 			rectangle.ShapeProperties.DrawOutline = true;
 
 			new CanvasWrapper(pattern, "RemoteOutputCard")
@@ -66,9 +65,8 @@ namespace RemoteControl.Client
 					})
 				)
 				.addAndConfigure<HoverButton>(hoverButton => {
-					// I do not have any wrapper support for default buttons, thus the graphic has to be set manually.
 					Fields.getPrivate(hoverButton.GetType(), "TargetGraphic").SetValue(hoverButton, hoverButton.GetComponent<Graphic>());
-					hoverButton.SetPaletteColor(PaletteColor.Secondary);
+					hoverButton.SetPaletteColor(PaletteColor.Primary);
 				})
 				.add<RemoteOutputCard>()
 				.build();
@@ -93,6 +91,5 @@ namespace RemoteControl.Client
 				text.SetLocalizationKey(RemoteControlMenu.GetRemoteTitle(_meta), true);
 			}
 		}
-
 	}
 }
