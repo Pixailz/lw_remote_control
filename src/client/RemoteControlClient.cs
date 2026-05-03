@@ -15,12 +15,7 @@ namespace RemoteControl
 		{
 			RegisterInput();
 			LoadMenus();
-
 			Logger.Info("[✔️] Client: loaded RemoteControl");
-		}
-
-		public void InitCards()
-		{
 		}
 
 		public void RegisterInput()

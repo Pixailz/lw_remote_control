@@ -84,12 +84,19 @@ namespace RemoteControl.Client.Menus
 
 		private void onMenuShown()
 		{
+			// Fix wrong instance being called
+			if (!object.ReferenceEquals(this, Instance))
+			{
+				return;
+			}
+
 			detailsSection.SetActive(false);
 			RefreshList();
 		}
 
 		private void onMenuHidden()
 		{
+
 		}
 
 		private void RefreshList()
@@ -110,7 +117,7 @@ namespace RemoteControl.Client.Menus
 		)
 		{
 			RemoteOutputClient	comp_client_code = (RemoteOutputClient)Instances.MainWorld.Renderer.Entities.GetClientCode(comp.Key);
-			RemoteOutputCard	card = Instantiate(RemoteOutputCard.pattern, scrollContent.gameObject.transform)
+			RemoteOutputCard	card = Instantiate(RemoteOutputCard.pattern, scrollContent.transform)
 				.GetComponent<RemoteOutputCard>();
 			card.remoteOutputMeta = new RemoteOutputMeta(
 				comp_client_code.Data.Id,
