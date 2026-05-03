@@ -14,6 +14,8 @@ namespace RemoteControl.Shared.CustomData
 
 		Toggle,
 		Pulse,
+
+		SendStatus,
 	}
 
 	public static class RemoteOutputDataInit

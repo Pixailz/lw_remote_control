@@ -34,10 +34,11 @@ namespace RemoteControl.Client.Menus
 			WS.window("RemoteControlMenu")
 				.setLocalizedTitle("RemoteControl - Menu")
 				.setYPosition(null)
+				.doNotBlurBuildingCanvas()
 				.configureContent(content => content
 					.layoutGrowElementHorizontalInner()
 					.add(WS.scrollableVertical
-						.fixedSize(1000, 800)
+						.fixedSize(800, 800)
 						.addAndConfigure<LayoutElement>(layout => {
 							layout.minWidth = 300f;
 							layout.preferredWidth = 500f;
@@ -45,12 +46,12 @@ namespace RemoteControl.Client.Menus
 							layout.preferredHeight = 300f;
 						})
 							.configureContent(content => content
+								.injectionKey(nameof(scrollContent))
 								.setAlignment(Alignment.Top)
 								.addAndConfigure<ContentSizeFitter>(fitter => {
 									fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 									fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 								})
-									.injectionKey(nameof(scrollContent))
 									.layoutGrowGap(
 										padding: new RectOffset(15, 15, 10, 10),
 										gapIndex: IndexHelper.Last
@@ -60,9 +61,54 @@ namespace RemoteControl.Client.Menus
 					.addContainer(
 						"RemoteControlMenuDetails", container => container
 						.injectionKey(nameof(detailsSection))
-						.fixedSize(1000, 800)
+						.fixedSize(600, 800)
 						.layoutVertical(
 							expandChildThickness: false
+						)
+						.add(WS.textLine
+							.injectionKey(nameof(detailsTitle))
+						)
+						.addContainer(
+							"detailsLineAddress", container => container
+							.layoutHorizontal(expandChildThickness: false)
+							.add(WS.textLine
+								.setLocalizationKey("RemoteControl.gui.RemoteMenuDetails.Address")
+							)
+							.add(WS.textLine
+								.injectionKey(nameof(detailsAddress))
+							)
+						)
+						.addContainer(
+							"detailsLineId", container => container
+							.layoutHorizontal(expandChildThickness: false)
+							.add(WS.textLine
+								.setLocalizationKey("RemoteControl.gui.RemoteMenuDetails.Id")
+							)
+							.add(WS.textLine
+								.injectionKey(nameof(detailsId))
+							)
+						)
+						.addContainer(
+							"buttonActions", container => container
+							.layoutHorizontal(expandChildThickness: false)
+							.add(WS.button
+								.injectionKey(nameof(buttonOnOff))
+								.setLocalizationKey("⏻")
+								.fixedSize(80, 80)
+								.add<ButtonLayout>()
+							)
+							.add(WS.button
+								.injectionKey(nameof(buttonPulse))
+								.setLocalizationKey("⚡")
+								.fixedSize(80, 80)
+								.add<ButtonLayout>()
+							)
+							.add(WS.button
+								.injectionKey(nameof(buttonTeleportTo))
+								.setLocalizationKey("📍")
+								.fixedSize(80, 80)
+								.add<ButtonLayout>()
+							)
 						)
 					)
 				)
@@ -79,8 +125,22 @@ namespace RemoteControl.Client.Menus
 		[AssignMe]
 		private GameObject detailsSection;
 
-		private static RemoteOutputCard currentCard = null;
+		[AssignMe]
+		private LocalizedTextMesh detailsTitle;
+		[AssignMe]
+		private LocalizedTextMesh detailsId;
+		[AssignMe]
+		private LocalizedTextMesh detailsAddress;
 
+		[AssignMe]
+		private HoverButton buttonOnOff;
+		[AssignMe]
+		private HoverButton buttonPulse;
+		[AssignMe]
+		private HoverButton buttonTeleportTo;
+
+		private static RemoteOutputCard currentCard = null;
+		private readonly List<RemoteOutputCard> instantiatedRemoteOutputCards = [];
 
 		private void onMenuShown()
 		{
@@ -89,18 +149,28 @@ namespace RemoteControl.Client.Menus
 			{
 				return;
 			}
-
+			currentCard = null;
 			detailsSection.SetActive(false);
-			RefreshList();
+			RefreshScrollArea();
+			buttonOnOff.OnClickEnd += toggleOutput;
+			buttonPulse.OnClickEnd += pulseOutput;
+			buttonTeleportTo.OnClickEnd += teleportToRemoteComponent;
 		}
 
 		private void onMenuHidden()
 		{
-
+			buttonOnOff.OnClickEnd -= toggleOutput;
+			buttonPulse.OnClickEnd -= pulseOutput;
+			buttonTeleportTo.OnClickEnd -= teleportToRemoteComponent;
 		}
 
-		private void RefreshList()
+		private void RefreshScrollArea()
 		{
+			foreach (RemoteOutputCard card in instantiatedRemoteOutputCards)
+				DestroyImmediate(card.gameObject);
+
+			instantiatedRemoteOutputCards.Clear();
+
 			ComponentType remoteOutputType = Instances.MainWorld.ComponentTypes.GetComponentType("RemoteControl.RemoteOutput");
 
 			foreach (var comp in Instances.MainWorld.Data.AllComponents)
@@ -116,30 +186,119 @@ namespace RemoteControl.Client.Menus
 			KeyValuePair<ComponentAddress, ComponentDataManager> comp
 		)
 		{
-			RemoteOutputClient	comp_client_code = (RemoteOutputClient)Instances.MainWorld.Renderer.Entities.GetClientCode(comp.Key);
-			RemoteOutputCard	card = Instantiate(RemoteOutputCard.pattern, scrollContent.transform)
-				.GetComponent<RemoteOutputCard>();
+			RemoteOutputClient	comp_client_code = GetClientCode(comp.Key);
+			RemoteOutputCard	card = Instantiate(
+				RemoteOutputCard.pattern,
+				scrollContent.transform
+			).GetComponent<RemoteOutputCard>();
+
+			instantiatedRemoteOutputCards.Add(card);
+
 			card.remoteOutputMeta = new RemoteOutputMeta(
 				comp_client_code.Data.Id,
 				comp.Key
 			);
-
-			HoverButton Focus = card.GetComponent<HoverButton>();
-			Focus.OnClickEnd += () =>
-			{
-				testFocus(card);
-			};
+			card.GetComponent<HoverButton>()
+				.OnClickEnd += () =>
+				{
+					testFocus(card);
+				};
+			CardSetStatus(card, comp_client_code.GetOutputState(0), false);
 		}
 
 		private void testFocus(RemoteOutputCard card)
 		{
 			currentCard = card;
 			detailsSection.SetActive(true);
+			detailsTitle.SetLocalizationKey(
+				GetRemoteTitle(card.remoteOutputMeta), true
+			);
+			detailsAddress.SetLocalizationKey(
+				card.remoteOutputMeta.Address.ToString(), true
+			);
+			detailsId.SetLocalizationKey(
+				card.remoteOutputMeta.Id, true
+			);
 		}
 
 		public static string GetRemoteTitle(RemoteOutputMeta meta)
 		{
 			return meta.Id == "" ? meta.Address.ToString() : meta.Id;
+		}
+
+
+		public static RemoteOutputClient GetClientCode(ComponentAddress addr)
+		{
+			return (RemoteOutputClient)Instances.MainWorld.Renderer.Entities
+				.GetClientCode(addr);
+		}
+
+		public static RemoteOutputClient GetCurrentClientCode()
+		{
+			return GetClientCode(currentCard.remoteOutputMeta.Address);
+		}
+
+
+		public static void toggleOutput()
+		{
+			GetCurrentClientCode().Data.Action = RemoteOutputAction.Toggle;
+		}
+
+		public static void pulseOutput()
+		{
+			GetCurrentClientCode().Data.Action = RemoteOutputAction.Pulse;
+		}
+
+		public static void teleportToRemoteComponent()
+		{
+			PlayerControllerManager.TeleportSelf(
+				GetCurrentClientCode().Component.WorldPosition
+			);
+			GameStateManager.TransitionBackToBuildingState();
+		}
+
+		public static void CardSetStatus(
+			RemoteOutputCard card,
+			bool status,
+			bool inverted = true
+		)
+		{
+			string _status;
+
+			// going for the inverse. don't know why :)
+			// if (inverted)
+			// {
+			// 	if (status)
+			// 		_status = "❎️";
+			// 	else
+			// 		_status = "✅️";
+			// }
+			// else
+			// {
+			// 	if (status)
+			// 		_status = "✅️";
+			// 	else
+			// 		_status = "❎️";
+			// }
+
+			// Simplier
+			if (inverted ^ status)
+				_status = "<color=#0a0>✅️</color>";
+			else
+				_status = "<color=#a00>❎️</color>";
+
+			card.status.SetLocalizationKey(_status, true);
+		}
+
+		public static void SetStatus(ComponentAddress address, bool status)
+		{
+			foreach (RemoteOutputCard card in Instance.instantiatedRemoteOutputCards)
+			{
+				if (card.remoteOutputMeta.Address == address)
+				{
+					CardSetStatus(card, status);
+				}
+			}
 		}
 	}
 }

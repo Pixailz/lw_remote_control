@@ -6,4 +6,3 @@ RemoteControl.IdSaved:           "<color=\#0f0>Id saved !</color>"
 
 RemoteControl.gui.RemoteMenuDetails.Address: "Address:"
 RemoteControl.gui.RemoteMenuDetails.Id: "Id:"
-RemoteControl.gui.RemoteMenuDetails.Status: "Status:"

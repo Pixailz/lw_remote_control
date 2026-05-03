@@ -12,11 +12,6 @@ namespace RemoteControl.Server
 			this.Data.Initialize();
 		}
 
-		protected override void SavePersistentValuesToCustomData()
-		{
-			this.Data.Status = Outputs[0].On;
-		}
-
 		protected override void DoLogicUpdate()
 		{
 			if (this.Data.Action == RemoteOutputAction.None)
@@ -35,6 +30,12 @@ namespace RemoteControl.Server
 					PulseOutput();
 				break;
 			}
+			if (this.Data.Action == RemoteOutputAction.SendStatus)
+			{
+				this.Data.Status = Outputs[0].On;
+				this.Data.Action = RemoteOutputAction.None;
+				return ;
+			}
 		}
 
 		protected override void OnCustomDataUpdated()
@@ -45,13 +46,13 @@ namespace RemoteControl.Server
 		private void InitOutput()
 		{
 			Outputs[0].On = this.Data.Status;
-			this.Data.Action = RemoteOutputAction.None;
+			this.Data.Action = RemoteOutputAction.SendStatus;
 		}
 
 		private void ToggleOutput()
 		{
 			Outputs[0].On = !Outputs[0].On;
-			this.Data.Action = RemoteOutputAction.None;
+			this.Data.Action = RemoteOutputAction.SendStatus;
 		}
 
 		private void PulseOutput()
@@ -59,7 +60,7 @@ namespace RemoteControl.Server
 			if (Outputs[0].On)
 			{
 				Outputs[0].On = false;
-				this.Data.Action = RemoteOutputAction.None;
+				this.Data.Action = RemoteOutputAction.SendStatus;
 			}
 			else
 			{

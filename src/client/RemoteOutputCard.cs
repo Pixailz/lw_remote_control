@@ -56,6 +56,10 @@ namespace RemoteControl.Client
 			new CanvasWrapper(pattern, "RemoteOutputCard")
 				.layoutGrowElementHorizontal(elementIndex: IndexHelper.nth(1))
 				.add(WS.textLine
+					.injectionKey(nameof(status))
+					.fixedSize(80, 80)
+				)
+				.add(WS.textLine
 					.injectionKey(nameof(text))
 					.configureTMP(tmp => {
 						tmp.fontSize = 40;
@@ -74,6 +78,9 @@ namespace RemoteControl.Client
 
 		[AssignMe] [SerializeField]
 		private LocalizedTextMesh text;
+
+		[AssignMe] [SerializeField]
+		public LocalizedTextMesh status;
 
 		private RemoteOutputMeta _meta;
 
