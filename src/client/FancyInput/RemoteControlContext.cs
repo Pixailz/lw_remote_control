@@ -4,4 +4,10 @@ namespace RemoteControl.Client
 	{
 		RemoteControlOpenMenu,
 	}
+
+	public enum RemoteControlTrigger
+	{
+		None,
+		RemoteControlOpenMenu,
+	}
 }

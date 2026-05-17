@@ -18,7 +18,6 @@ using EccsGuiBuilder.Client.Layouts.Helper;
 
 
 using RemoteControl.Shared.CustomData;
-using ThisOtherThing.UI.Shapes;
 using LogicUI.Palettes;
 
 namespace RemoteControl.Client.Menus

@@ -13,10 +13,10 @@ namespace RemoteControl.Client
         public override bool PlayerCanMoveAndLookAround => false;
         // public override bool ShowHotbarWhileStateActive => false;
 
-        public override IEnumerable<InputTrigger> HelpScreenTriggers => [
-            UITrigger.Back,
-			RemoteControlTrigger.RemoteControlOpenMenu
-		];
+        // public override IEnumerable<InputTrigger> HelpScreenTriggers => [
+        //     UITrigger.Back,
+		// 	RemoteControlTrigger.RemoteControlOpenMenu
+		// ];
 
         public override void OnEnter()
 		{
